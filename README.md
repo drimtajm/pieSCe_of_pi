@@ -1,7 +1,9 @@
 pieSCe_of_pi - a "safer car" project for the Raspberry Pi
 =================================================================
 
-TODO
+Project "Safer Car" using a Raspberry Pi mounted on an RC car
+
+TODO: Write more
 
 Getting started
 ---------------

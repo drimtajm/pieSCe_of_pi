@@ -1,4 +1,5 @@
 drivers/priv/
 ebin/
+*.beam
 *.o
 *~
