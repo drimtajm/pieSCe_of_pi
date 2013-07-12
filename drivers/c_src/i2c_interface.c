@@ -32,7 +32,7 @@ static int load(ErlNifEnv* env, void** priv_data, ERL_NIF_TERM load_info) {
     return 0;
 }
 
-static ERL_NIF_TERM errno2atom(ErlNifEnv *env, int error_code) {
+static ERL_NIF_TERM errno2atom(ErlNifEnv *env, const int error_code) {
   switch (error_code) {
   case EACCES: return enif_make_atom(env, "eacces");
   case EINVAL: return enif_make_atom(env, "einval");
@@ -43,15 +43,26 @@ static ERL_NIF_TERM errno2atom(ErlNifEnv *env, int error_code) {
   }
 }
 
+static ERL_NIF_TERM make_error(ErlNifEnv *env, const int error_code) {
+  return enif_make_tuple(env, 2, atom_error, errno2atom(env, error_code));
+}
+
 static ERL_NIF_TERM open_i2c_bus_nif(ErlNifEnv *env, int argc,
 				     const ERL_NIF_TERM argv[]) {
-  int file;
+  int file, address, result;
+  if (!enif_get_int(env, argv[0], &address)) {
+    return enif_make_badarg(env);
+  }
   // My Raspberry Pi uses I2C bus 0.
   // If necessary, change the line to match the bus number of _your_ system:
   char *filename = "/dev/i2c-0";
   if ((file = open(filename, O_RDWR)) < 0) {
-    int result = errno;
-    return enif_make_tuple(env, 2, atom_error, errno2atom(env, result));
+    result = errno;
+    return make_error(env, result);
+  }
+  // The bus is open, now communicate to the device pointed out by address
+  if (ioctl(file, I2C_SLAVE, address) < 0) {
+    return make_error(env, errno);
   }
   return enif_make_tuple(env, 2, atom_ok, enif_make_int(env, file));
 }
@@ -73,7 +84,7 @@ static ERL_NIF_TERM close_i2c_bus_nif(ErlNifEnv *env, int argc,
 static ErlNifFunc nif_funcs[] =
     {
         // setup
-      {"open_i2c_bus_nif",            0, open_i2c_bus_nif},
+      {"open_i2c_bus_nif",            1, open_i2c_bus_nif},
       {"close_i2c_bus_nif",           1, close_i2c_bus_nif}
     };
 

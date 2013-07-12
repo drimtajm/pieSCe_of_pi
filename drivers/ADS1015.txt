@@ -1,0 +1,16 @@
+Default I2C address for AD converter ADS1015:
+0x48
+
+Sample run:
+~/workspace/pieSCe_of_pi [master]> erl -pa drivers/ebin
+Erlang R16B01 (erts-5.10.2) [source] [async-threads:10] [hipe] [kernel-poll:false]
+
+Eshell V5.10.2  (abort with ^G)
+1> {ok, Handle} = i2c_interface:open_i2c_bus(16#48).
+{ok,5}
+2> i2c_interface:close_i2c_bus(Handle).
+ok
+
+TODO:
+* Add more inside i2c_interface like reading and writing registers
+* Investigate why it is possible to supply _any_ address

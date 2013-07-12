@@ -23,7 +23,7 @@
 
 -module(i2c_interface).
 
--export([open_i2c_bus/0, close_i2c_bus/1]).
+-export([open_i2c_bus/1, close_i2c_bus/1]).
 
 -define(nif_stub,
         erlang:nif_error({nif_not_loaded, module, ?MODULE, line, ?LINE})).
@@ -31,6 +31,7 @@
 -on_load(on_load/0).
 
 -type file_descriptor() :: integer().
+-type i2c_address()     :: integer().
 -type error_code()      :: atom().
 
 on_load() ->
@@ -45,10 +46,11 @@ on_load() ->
     Filename = filename:join(PrivDir, ?MODULE),
     ok = erlang:load_nif(Filename, 0).
 
--spec(open_i2c_bus() -> {ok, file_descriptor()} | {error, error_code()}).
-%%% @doc This opens the I2C bus and returns a file handle to the open bus.
-open_i2c_bus() ->
-    open_i2c_bus_nif().
+-spec(open_i2c_bus(i2c_address()) -> {ok, file_descriptor()} | {error, error_code()}).
+%%% @doc This opens the I2C bus, connects to the device at the specified
+%%%      address and returns a file handle to the open bus.
+open_i2c_bus(I2CAddress) ->
+    open_i2c_bus_nif(I2CAddress).
 
 -spec(close_i2c_bus(file_descriptor()) -> ok| {error, error_code()}).
 %%% @doc This closes the I2C bus for a given file handle.
@@ -58,7 +60,7 @@ close_i2c_bus(FileHandle) ->
 %%%%%%%%%%%%%%%
 %% Define stubs for NIF functions
 
-open_i2c_bus_nif()             -> ?nif_stub.
+open_i2c_bus_nif(_I2CAddress)  -> ?nif_stub.
 close_i2c_bus_nif(_FileHandle) -> ?nif_stub.
 
 %%
