@@ -6,11 +6,16 @@ Sample run:
 Erlang R16B01 (erts-5.10.2) [source] [async-threads:10] [hipe] [kernel-poll:false]
 
 Eshell V5.10.2  (abort with ^G)
-1> {ok, Handle} = i2c_interface:open_i2c_bus(16#48).
+1> {ok, Handle} = i2c_interface:open_i2c_bus(16#48).      <- open bus for address
 {ok,5}
-2> i2c_interface:close_i2c_bus(Handle).
+2> {ok, Value} = i2c_interface:read_i2c_word(Handle, 1).  <- read A/D converter's config register
+{ok,34179}
+3> io:format("~.16Bh~n",[Value]).
+8583h                                                     <- returned value is the default value of the config register according to the data sheet!
+ok
+4> i2c_interface:close_i2c_bus(Handle).
 ok
 
 TODO:
-* Add more inside i2c_interface like reading and writing registers
-* Fill stub
+* Add more inside i2c_interface: writing registers
+* Correct and fill stub

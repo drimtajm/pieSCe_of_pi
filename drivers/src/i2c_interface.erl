@@ -24,6 +24,7 @@
 -module(i2c_interface).
 
 -export([open_i2c_bus/1, close_i2c_bus/1]).
+-export([read_i2c_byte/2, read_i2c_word/2]).
 
 -define(nif_stub,
         erlang:nif_error({nif_not_loaded, module, ?MODULE, line, ?LINE})).
@@ -32,6 +33,7 @@
 
 -type file_descriptor() :: integer().
 -type i2c_address()     :: integer().
+-type register()        :: integer().   %% TODO: constrain to [0; 255]
 -type error_code()      :: atom().
 
 on_load() ->
@@ -57,11 +59,25 @@ open_i2c_bus(I2CAddress) ->
 close_i2c_bus(FileHandle) ->
     close_i2c_bus_nif(FileHandle).
 
+%% TODO: correct specification
+-spec(read_i2c_byte(file_descriptor(), register()) -> {ok, integer()} | error).
+%%% @doc This reads a register value from the I2C device.
+read_i2c_byte(FileHandle, Register) ->
+    read_i2c_byte_nif(FileHandle, Register).
+
+%% TODO: correct specification
+-spec(read_i2c_word(file_descriptor(), register()) -> {ok, integer()} | error).
+%%% @doc This reads a register value from the I2C device.
+read_i2c_word(FileHandle, Register) ->
+    read_i2c_word_nif(FileHandle, Register).
+
 %%%%%%%%%%%%%%%
 %% Define stubs for NIF functions
 
-open_i2c_bus_nif(_I2CAddress)  -> ?nif_stub.
-close_i2c_bus_nif(_FileHandle) -> ?nif_stub.
+open_i2c_bus_nif(_I2CAddress)             -> ?nif_stub.
+read_i2c_byte_nif(_FileHandle, _Register) -> ?nif_stub.
+read_i2c_word_nif(_FileHandle, _Register) -> ?nif_stub.
+close_i2c_bus_nif(_FileHandle)            -> ?nif_stub.
 
 %%
 %%%%%%%%%%%%%%%
