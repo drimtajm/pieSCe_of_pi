@@ -9,7 +9,7 @@ TODO: Write more
 Getting started
 ---------------
 
-Start by downloading and installing the i2c-tools package.
+Start by downloading and installing the i2c-tools and libi2c-dev packages.
 Also, make sure you have downloaded [rebar][1] and added it to your PATH.
 
 Then it should be possible to build the project:
