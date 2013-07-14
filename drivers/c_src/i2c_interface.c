@@ -20,7 +20,14 @@
 #include <errno.h>
 #include <sys/ioctl.h>
 
+#ifdef __ARM_EABI__
+// ARM architecture, we're probably on a Raspberry Pi. Include "real" I2C headers
 #include <linux/i2c-dev.h>
+#else
+// Not on ARM, probably compiling on a PC. Include I2C stub headers
+#include "i2c-stub.h"
+#endif
+
 #include "erl_nif.h"
 
 static ERL_NIF_TERM atom_ok;
@@ -53,9 +60,13 @@ static ERL_NIF_TERM open_i2c_bus_nif(ErlNifEnv *env, int argc,
   if (!enif_get_int(env, argv[0], &address)) {
     return enif_make_badarg(env);
   }
+#ifdef __ARM_EABI__
   // My Raspberry Pi uses I2C bus 0.
   // If necessary, change the line to match the bus number of _your_ system:
   char *filename = "/dev/i2c-0";
+#else
+  char *filename = "i2c-bus-stub";
+#endif
   if ((file = open(filename, O_RDWR)) < 0) {
     result = errno;
     return make_error(env, result);

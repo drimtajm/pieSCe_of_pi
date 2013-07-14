@@ -13,4 +13,4 @@ ok
 
 TODO:
 * Add more inside i2c_interface like reading and writing registers
-* Investigate why it is possible to supply _any_ address
+* Fill stub
