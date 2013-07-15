@@ -1,7 +1,10 @@
 Milestone 0: Make it work
 
 - [ ] Write NIF to interface I2C driver in ioctl from Erlang
+- [ ] Fill Wiki with pictures and instructions/explanations
+- [ ] Make design and put it on Wiki
 - [ ] Fix Makefile and rebar config structure
+- [ ] Start using unit tests
 - [ ] Write driver for A/D converter
 - [ ] Implement "speedometer"
 - [ ] Test/calibrate speedometer and ensure its accuracy
@@ -30,12 +33,15 @@ Milestone 3: Wrap it up
 
 - [ ] Make sure code is modular and reusable (especially drivers)
 - [ ] Make "configure" that checks for needed packages
-- [ ] Document on the Wiki with pictures
+- [ ] Finish documentation on the Wiki with pictures
 - [ ] Record a "demo test run"
 - [ ] Finish presentation
 
 Milestone 4: Add "extras"
 
+- [ ] Add support for I2C high speed mode and possibly other settings
+- [ ] Add support for devices that can't use SMBus
+- [ ] Measure power consumption under varying conditions
 - [ ] Replace A/D converter for speed measurement if not needed earlier
 - [ ] Add support for WIDCOMM in bluetooth driver if possible
 - [ ] Make it possible to display values "scaled up" to life-size cars
