@@ -118,6 +118,50 @@ static ERL_NIF_TERM read_i2c_word_nif(ErlNifEnv *env, int argc,
   return enif_make_tuple(env, 2, atom_ok, enif_make_int(env, value));
 }
 
+static ERL_NIF_TERM write_i2c_byte_nif(ErlNifEnv *env, int argc,
+				       const ERL_NIF_TERM argv[]) {
+  int file;
+  unsigned int reg, value0;
+  int32_t result;
+  uint8_t value;
+  if (!enif_get_int(env, argv[0], &file)) {
+    return enif_make_badarg(env);
+  }
+  if ((!enif_get_uint(env, argv[1], &reg)) || (reg >= 256)) {
+    return enif_make_badarg(env);
+  }
+  if ((!enif_get_uint(env, argv[2], &value0)) || (value0 >= 256)) {
+    return enif_make_badarg(env);
+  }
+  value = value0;
+  if ((result = i2c_smbus_write_byte_data(file, reg, value)) < 0) {
+    return make_error(env, errno);
+  }
+  return atom_ok;
+}
+
+static ERL_NIF_TERM write_i2c_word_nif(ErlNifEnv *env, int argc,
+				       const ERL_NIF_TERM argv[]) {
+  int file;
+  unsigned int reg, value0;
+  int32_t result;
+  uint16_t value;
+  if (!enif_get_int(env, argv[0], &file)) {
+    return enif_make_badarg(env);
+  }
+  if ((!enif_get_uint(env, argv[1], &reg)) || (reg >= 256)) {
+    return enif_make_badarg(env);
+  }
+  if ((!enif_get_uint(env, argv[2], &value0)) || (value0 >= 65536)) {
+    return enif_make_badarg(env);
+  }
+  value = swap_bytes(value0);
+  if ((result = i2c_smbus_write_word_data(file, reg, value)) < 0) {
+    return make_error(env, errno);
+  }
+  return atom_ok;
+}
+
 static ERL_NIF_TERM close_i2c_bus_nif(ErlNifEnv *env, int argc,
 				      const ERL_NIF_TERM argv[]) {
   int file, result;
@@ -135,8 +179,10 @@ static ERL_NIF_TERM close_i2c_bus_nif(ErlNifEnv *env, int argc,
 static ErlNifFunc nif_funcs[] =
     {
       {"open_i2c_bus_nif",            1, open_i2c_bus_nif},
-      {"read_i2c_word_nif",           2, read_i2c_word_nif},
       {"read_i2c_byte_nif",           2, read_i2c_byte_nif},
+      {"read_i2c_word_nif",           2, read_i2c_word_nif},
+      {"write_i2c_byte_nif",          3, write_i2c_byte_nif},
+      {"write_i2c_word_nif",          3, write_i2c_word_nif},
       {"close_i2c_bus_nif",           1, close_i2c_bus_nif}
     };
 

@@ -13,9 +13,18 @@ Eshell V5.10.2  (abort with ^G)
 3> io:format("~.16Bh~n",[Value]).
 8583h                                                     <- returned value is the default value of the config register according to the data sheet!
 ok
-4> i2c_interface:close_i2c_bus(Handle).
+4> Value = Value0-192.                                    <- continuous mode + 3300 SPS
+33987
+5> i2c_interface:write_i2c_word(Handle, 1, Value).        <- set new configuration
+ok
+6> {ok, Value1} = i2c_interface:read_i2c_word(Handle, 1).
+{ok,1219}                                                 <- now conversion is ongoing!
+7> i2c_interface:write_i2c_word(Handle, 1, Value0).       <- reset register to default values
+ok
+8> {ok, Value0} = i2c_interface:read_i2c_word(Handle, 1).
+{ok,34179}
+9> i2c_interface:close_i2c_bus(Handle).
 ok
 
 TODO:
-* Add more inside i2c_interface: writing registers
 * Correct and fill stub
