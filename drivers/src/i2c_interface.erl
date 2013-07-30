@@ -1,5 +1,12 @@
-%%% An Erlang NIF that interfaces the I2C driver in ioctl.
-%%% Copyright (C) 2013 Angela Johansson
+%%%-------------------------------------------------------------------
+%%% @author  drimtajm@github
+%%% @copyright (C) 2013, Angela Johansson
+%%% @doc
+%%% An Erlang NIF that interfaces the I2C bus on the Raspberry Pi
+%%%
+%%% This interface uses the I2C ioctl driver which provides access to the
+%%% I2C bus with a file descriptor. A precondition to using this software
+%%% is a working I2C bus and an installed i2c-tools package.
 %%%
 %%% i2c_interface is free software:  you can redistribute it and/or modify
 %%% it under the terms of the GNU Lesser General Public License as
@@ -13,14 +20,10 @@
 %%%
 %%% You should have received a copy of the GNU Lesser General Public License
 %%% along with this software.  If not, see <http://www.gnu.org/licenses/>.
-
-%%% @doc
-%%% An Erlang NIF that interfaces the I2C bus on the Raspberry Pi
 %%%
-%%% This interface uses the I2C ioctl driver which provides access to the
-%%% I2C bus with a file descriptor. A precondition to using this software
-%%% is a working I2C bus and an installed i2c-tools package.
-
+%%% @end
+%%% Created : 30 Jul 2013 by drimtajm
+%%%-------------------------------------------------------------------
 -module(i2c_interface).
 
 -export([open_i2c_bus/1, close_i2c_bus/1]).
