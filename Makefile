@@ -10,10 +10,16 @@ OTP_RELEASE := $(shell erl +B -noshell -noinput \
 #BEAMS_NO_DEPS = $(shell find $(SUBDIRS_NO_DEPS) -name \*.beam -print | \
         grep /ebin/)
 
-.PHONY: all clean
+.PHONY: all deps test clean
 
-all:
+all: deps
 	$(REBAR) compile
+
+deps:
+	$(REBAR) get-deps
+
+test:
+	$(REBAR) skip_deps=true eunit
 
 clean:
 	$(REBAR) clean

@@ -1,5 +1,7 @@
-drivers/priv/
+deps/
 ebin/
+drivers/.eunit/
+drivers/priv/
 *.beam
 *.o
 *~
