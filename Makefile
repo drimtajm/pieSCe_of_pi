@@ -18,8 +18,8 @@ all: deps
 deps:
 	$(REBAR) get-deps
 
-test:
-	$(REBAR) skip_deps=true eunit
+test: all
+	$(REBAR) -D test skip_deps=true eunit
 
 clean:
 	$(REBAR) clean

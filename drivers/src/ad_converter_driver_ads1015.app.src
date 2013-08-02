@@ -29,6 +29,7 @@
   {mod, {ads1015_driver_app, []}},
   {env, [%% A/D converter specific settings, see datasheet for details:
 	 %% http://www.adafruit.com/datasheets/ads1015.pdf
+	 {i2c_address, 16#48}, %% default address
 	 {input_channel, 0},
 	 {max_voltage, 6.144},
 	 {operating_mode, continuous},

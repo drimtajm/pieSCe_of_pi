@@ -33,7 +33,11 @@
 -define(nif_stub,
         erlang:nif_error({nif_not_loaded, module, ?MODULE, line, ?LINE})).
 
+-ifndef(test).
 -on_load(on_load/0).
+-else.
+-export([on_load/0]).
+-endif.
 
 -type file_descriptor() :: integer().
 -type i2c_address()     :: integer().

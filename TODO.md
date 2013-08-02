@@ -1,11 +1,11 @@
 Milestone 0: Make it work
 
-- [ ] Write NIF to interface I2C driver in ioctl from Erlang
+- [x] Write NIF to interface I2C driver in ioctl from Erlang
 - [ ] Fill Wiki with pictures and instructions/explanations
 - [ ] Make design and put it on Wiki
-- [ ] Fix Makefile and rebar config structure
-- [ ] Start using unit tests
-- [ ] Write driver for A/D converter
+- [x] Fix Makefile and rebar config structure
+- [ ] Start using unit tests - ongoing
+- [ ] Write driver for A/D converter - ongoing
 - [ ] Implement "speedometer"
 - [ ] Test/calibrate speedometer and ensure its accuracy
 - [ ] Calibrate distance sensor

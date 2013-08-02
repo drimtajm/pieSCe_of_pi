@@ -13,6 +13,8 @@ Eshell V5.10.2  (abort with ^G)
 3> io:format("~.16Bh~n",[Value]).
 8583h                                                     <- returned value is the default value of the config register according to the data sheet!
 ok
+%%% base_value: 00011
+%%% CS<3>MV<3>OP<1>DR<3>00011
 4> Value = Value0-192.                                    <- continuous mode + 3300 SPS
 33987
 5> i2c_interface:write_i2c_word(Handle, 1, Value).        <- set new configuration
