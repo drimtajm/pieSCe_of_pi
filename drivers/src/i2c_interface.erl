@@ -39,10 +39,11 @@
 -export([on_load/0]).
 -endif.
 
--type file_descriptor() :: integer().
--type i2c_address()     :: integer().
--type register()        :: integer().   %% TODO: constrain to [0; 255]
--type error_code()      :: atom().
+-type file_descriptor()  :: pos_integer().
+-type i2c_address()      :: pos_integer().
+-type register_address() :: byte().
+-type error_code()       :: atom().
+-type word()             :: 0..65535.
 
 on_load() ->
     PrivDir = case code:priv_dir(?MODULE) of
@@ -56,32 +57,43 @@ on_load() ->
     Filename = filename:join(PrivDir, ?MODULE),
     ok = erlang:load_nif(Filename, 0).
 
--spec(open_i2c_bus(i2c_address()) -> {ok, file_descriptor()} | {error, error_code()}).
+
+-spec(open_i2c_bus(i2c_address()) ->
+	     {ok, file_descriptor()} | {error, error_code()}).
 %%% @doc This opens the I2C bus, connects to the device at the specified
 %%%      address and returns a file handle to the open bus.
 open_i2c_bus(I2CAddress) ->
     open_i2c_bus_nif(I2CAddress).
 
--spec(close_i2c_bus(file_descriptor()) -> ok| {error, error_code()}).
+-spec(close_i2c_bus(file_descriptor()) ->
+	     ok | {error, error_code()}).
 %%% @doc This closes the I2C bus for a given file handle.
 close_i2c_bus(FileHandle) ->
     close_i2c_bus_nif(FileHandle).
 
-%% TODO: correct specification
--spec(read_i2c_byte(file_descriptor(), register()) -> {ok, integer()} | error).
+-spec(read_i2c_byte(file_descriptor(), register_address()) ->
+	     {ok, byte()} | {error, error_code()}).
 %%% @doc This reads a register value from the I2C device.
 read_i2c_byte(FileHandle, Register) ->
     read_i2c_byte_nif(FileHandle, Register).
 
-%% TODO: correct specification
--spec(read_i2c_word(file_descriptor(), register()) -> {ok, integer()} | error).
+-spec(read_i2c_word(file_descriptor(), register_address()) ->
+	     {ok, word()} | {error, error_code()}).
 %%% @doc This reads a register value from the I2C device.
 read_i2c_word(FileHandle, Register) ->
     read_i2c_word_nif(FileHandle, Register).
 
+-spec(write_i2c_byte(file_descriptor(), register_address(),
+		     byte()) ->
+	     ok | {error, error_code()}).
+%%% @doc This writes a byte value to a register on the I2C device.
 write_i2c_byte(FileHandle, Register, Value) ->
     write_i2c_byte_nif(FileHandle, Register, Value).
 
+-spec(write_i2c_word(file_descriptor(), register_address(),
+		     word()) ->
+	     ok | {error, error_code()}).
+%%% @doc This writes a word value to a register on the I2C device.
 write_i2c_word(FileHandle, Register, Value) ->
     write_i2c_word_nif(FileHandle, Register, Value).
 
