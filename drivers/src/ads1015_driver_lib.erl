@@ -26,6 +26,7 @@
 
 -include("../include/ads1015_driver.hrl").
 
+-export([decode_status/1]).
 -export([encode_channel/1, decode_channel/1]).
 -export([encode_max_voltage/1, decode_max_voltage/1]).
 -export([encode_operating_mode/1, decode_operating_mode/1]).
@@ -33,9 +34,25 @@
 -export([encode_config_register_value/4, decode_config_register_value/1]).
 
 %% ---------------------------------------------------------------------
+%% Operational status functionality - decode/readonly
+%% ---------------------------------------------------------------------
+
+-spec(decode_status(word()) -> status()).
+decode_status(BitPattern) when is_integer(BitPattern),
+				BitPattern >= 0, BitPattern =< ?MAX_WORD ->
+    case BitPattern band ?STATUS_BIT of
+	?IDLE -> idle;
+	?BUSY -> busy
+    end;
+decode_status(_BitPattern) ->
+    throw(badarg).
+
+%% ---------------------------------------------------------------------
 %% Channel functionality
 %% ---------------------------------------------------------------------
 
+%% Not possible to choose values for the channel where the comparator
+%% would be used, since this driver only supports single-ended mode
 -spec(encode_channel(channel()) -> word()).
 encode_channel(Channel) when is_integer(Channel),
 			     Channel >= 0, Channel =< 3 ->
@@ -48,7 +65,7 @@ encode_channel(Channel) when is_integer(Channel),
 encode_channel(_Channel) ->
     throw(badarg).
 
--spec(decode_channel(word()) -> channel()).
+-spec(decode_channel(word()) -> channel() | comparator_mode).
 decode_channel(BitPattern) when is_integer(BitPattern),
 				BitPattern >= 0, BitPattern =< ?MAX_WORD ->
     case BitPattern band ?CHANNEL_BITS of
@@ -56,7 +73,7 @@ decode_channel(BitPattern) when is_integer(BitPattern),
 	?CHANNEL1 -> 1;
 	?CHANNEL2 -> 2;
 	?CHANNEL3 -> 3;
-	_Else     -> throw({badarg, unknown_channel})
+	_Else     -> comparator_mode
     end;
 decode_channel(_BitPattern) ->
     throw(badarg).
@@ -88,8 +105,7 @@ decode_max_voltage(BitPattern) when is_integer(BitPattern),
 	?MAX_VOLTAGE_2V   -> 2.048;
 	?MAX_VOLTAGE_1V   -> 1.024;
 	?MAX_VOLTAGE_05V  -> 0.512;
-	?MAX_VOLTAGE_025V -> 0.256;
-	_Else             -> throw({badarg, unknown_max_voltage})
+	_Else             -> 0.256
     end;
 decode_max_voltage(_BitPattern) ->
     throw(badarg).
@@ -139,14 +155,14 @@ encode_data_rate(_DataRate) ->
 decode_data_rate(BitPattern) when is_integer(BitPattern),
 				BitPattern >= 0, BitPattern =< ?MAX_WORD ->
     case BitPattern band ?DATA_RATE_BITS of
-	?DATA_RATE_128  -> 128;
-	?DATA_RATE_250  -> 250;
-	?DATA_RATE_490  -> 490;
-	?DATA_RATE_920  -> 920;
-	?DATA_RATE_1600 -> 1600;
-	?DATA_RATE_2400 -> 2400;
-	?DATA_RATE_3300 -> 3300;
-	?DATA_RATE_BITS -> 3300
+	?DATA_RATE_128    -> 128;
+	?DATA_RATE_250    -> 250;
+	?DATA_RATE_490    -> 490;
+	?DATA_RATE_920    -> 920;
+	?DATA_RATE_1600   -> 1600;
+	?DATA_RATE_2400   -> 2400;
+	?DATA_RATE_3300   -> 3300;
+	?DATA_RATE_3300_2 -> 3300
     end;
 decode_data_rate(_BitPattern) ->
     throw(badarg).
@@ -166,7 +182,9 @@ encode_config_register_value(Channel, MaxVoltage, OperatingMode, DataRate) ->
 	?BASE_VALUE.
 
 -spec(decode_config_register_value(word()) ->
-	     {ok, channel(), max_voltage(), operating_mode(), data_rate()}).
+	     {ok, status(), channel(), max_voltage(),
+	          operating_mode(), data_rate()}).
 decode_config_register_value(Value) ->
-    {ok, decode_channel(Value), decode_max_voltage(Value),
-     decode_operating_mode(Value), decode_data_rate(Value)}.
+    {ok, decode_status(Value), decode_channel(Value),
+     decode_max_voltage(Value), decode_operating_mode(Value),
+     decode_data_rate(Value)}.
