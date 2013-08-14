@@ -14,7 +14,13 @@ Also, make sure you have downloaded [rebar][1] and added it to your PATH.
 
 Then it should be possible to build the project:
 
-    rebar compile
+    make
+    
+Run the unit tests:
+
+    make test
+    
+Note that the unit tests do not need to be run on target, i.e. any Linux box without I2C bus will do.
     
 [1]: https://github.com/basho/rebar/
 
