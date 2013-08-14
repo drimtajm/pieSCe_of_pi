@@ -63,11 +63,11 @@ start_link() ->
 get_current_channel() ->
     gen_server:call(?SERVER, get_current_channel, 1000).
 
-change_channel(Channel) when Channel >= 0, Channel =< 3 ->
+change_channel(Channel) when is_integer(Channel), Channel >= 0, Channel =< 3 ->
     %% only four channels available
     gen_server:call(?SERVER, {change_channel, Channel}, 10000);
 change_channel(_Channel) ->
-    throw({badarg, out_of_range}).
+    throw(badarg).
 
 read_value_from_current_channel() ->
     gen_server:call(?SERVER, read_value, 1000).
@@ -75,10 +75,14 @@ read_value_from_current_channel() ->
 read_config_register() ->
     gen_server:call(?SERVER, read_config_register, 1000).
 
-set_config_register(Channel, MaxVoltage, OperatingMode, DataRate) ->
+set_config_register(Channel, MaxVoltage, OperatingMode, DataRate) 
+  when is_integer(Channel), Channel >= 0, Channel =< 3 ->
+    %% TODO: check other parameters as well
     gen_server:call(?SERVER,
 		    {set_config_register, Channel, MaxVoltage,
-		     OperatingMode, DataRate}, 1000).
+		     OperatingMode, DataRate}, 1000);
+set_config_register(_Channel, _MaxVoltage, _OperatingMode, _DataRate) ->
+    throw(badarg).
 
 stop() ->
     stop(normal).
@@ -134,6 +138,31 @@ get_default_value_for(Parameter) ->
 %%                                   {stop, Reason, State}
 %% @end
 %%--------------------------------------------------------------------
+%% TODO: terminate when device/handle not available
+%% TODO: terminate when values manipulated outside of driver
+handle_call(get_current_channel, _From,
+	    #state{input_channel = Channel} = State) ->
+    {reply, {ok, Channel}, State};
+handle_call({change_channel, NewChannel}, _From, State) ->
+    NewState = State#state{input_channel = NewChannel},
+    set_config_register_value(NewState),
+    {reply, ok, NewState};
+handle_call(read_config_register, _From,
+	    #state{input_channel = Channel,
+		   max_voltage = MaxVoltage,
+		   operating_mode = OperatingMode,
+		   data_rate = DataRate} = State) ->
+    Result = get_config_register_value(State),
+    {ok, _Status, Channel, MaxVoltage, OperatingMode, DataRate} = Result,
+    {reply, Result, State};
+handle_call({set_config_register, NewChannel, NewMaxVoltage,
+	     NewOperatingMode, NewDataRate}, _From, State) ->
+    NewState = State#state{input_channel = NewChannel,
+			   max_voltage = NewMaxVoltage,
+			   operating_mode = NewOperatingMode,
+			   data_rate = NewDataRate},
+    set_config_register_value(NewState),
+    {reply, ok, NewState};    
 handle_call(_Request, _From, State) ->
     Reply = ok,
     {reply, Reply, State}.
@@ -205,8 +234,7 @@ set_config_register_value(#state{i2c_interface_handle = Handle,
 	      InputChannel, MaxVoltage, OperatingMode, DataRate),
     i2c_interface:write_i2c_word(Handle, ?CONFIG_REGISTER, Value).
 
-%%get_config_register_value(#state{i2c_interface_handle = Handle}) ->
-%%    Handle,
-%%    Value = 45,
-%%    decode_config_register_value(Value).
+get_config_register_value(#state{i2c_interface_handle = Handle}) ->
+    {ok, Value} = i2c_interface:read_i2c_word(Handle, ?CONFIG_REGISTER),
+    ads1015_driver_lib:decode_config_register_value(Value).
 
