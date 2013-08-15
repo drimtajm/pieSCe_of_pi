@@ -4,7 +4,8 @@ pieSCe of Pi
 Project "Safer Car" using a Raspberry Pi mounted on an RC car.
 The purpose of the project is to provide a proof-of-concept of a car that warns when the distance to the next car is too short.
 
-![poP car](https://raw.github.com/drimtajm/pieSCe_of_pi/master/resources/images/poP1.jpg)![poP car with description](https://raw.github.com/drimtajm/pieSCe_of_pi/master/resources/images/poP2.jpg)
+<img src="https://raw.github.com/drimtajm/pieSCe_of_pi/master/resources/images/poP1.jpg" alt="poP car" height="414" width="400">
+<img src="https://raw.github.com/drimtajm/pieSCe_of_pi/master/resources/images/poP2.jpg" alt="poP car with descriptions" height="450" width="450">
 
 TODO: Write more
 
