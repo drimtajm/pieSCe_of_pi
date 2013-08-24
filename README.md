@@ -54,9 +54,14 @@ The question: "Why do you think people drive too close to the next car?" was ans
 "I don't know. I guess most people are in a hurry."<br><br>
 Do you want to know my answer to that question?<br>
 Three words: Lack of awareness.<br>
-Sadly, I am aware that I usually drive too close, even when I double the distance of the average driver in my home town.<br>
+Most people simply don't know they are driving too close.<br>
+And even if you told them, I think most people have no idea what an appropriate distance would be.<br>
+Forget about the three-second rule. It's misleading and inaccurate. I'm talking about the actual distance here.<br>
+Sadly, I am aware that I usually drive too close myself, even when I double the distance of the average driver
+in my home town.<br>
 Problem is, I still don't know what's safe.<br>
-Am I really driving too close?<br>
+The appropriate distance is huge according to research!<br>
+But am I really driving too close?<br>
 My eyes tell me I'm not. But that can be deceiving.<br>
 And I know what most people think: "I can drive a little closer, there's plenty of room to stop
 if the car in front suddenly hits the brakes." But the statistics tell us most people are mistaken.<br>
