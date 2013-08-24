@@ -36,8 +36,8 @@ Note that the unit tests do not need to be run on target, i.e. any Linux box wit
     
 [1]: https://github.com/basho/rebar/
 
-Continued discussion
---------------------
+Continued discussion (or rather: monologue)
+-------------------------------------------
 
 With the possibilities that modern technology offers, I believe it would be only natural to have distance measurements as well
 as speed measurements.<br>
