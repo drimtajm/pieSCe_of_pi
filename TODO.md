@@ -4,7 +4,7 @@ Milestone 0: Make it work
 - [ ] Fill Wiki with pictures and instructions/explanations
 - [ ] Make design and put it on Wiki
 - [x] Fix Makefile and rebar config structure
-- [ ] Start using unit tests - ongoing
+- [x] Start using unit tests
 - [ ] Write driver for A/D converter - ongoing
 - [ ] Implement "speedometer"
 - [ ] Test/calibrate speedometer and ensure its accuracy
