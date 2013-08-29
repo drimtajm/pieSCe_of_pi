@@ -14,7 +14,7 @@
 -define(MAX_VOLTAGE, 6.144).
 -define(OPERATING_MODE, single_shot).
 -define(DATA_RATE, 920).
--define(CONVERSION_REGISTER_VALUE, 16#ba06).
+-define(CONVERSION_REGISTER_VALUE, -15).
 
 expected_config_register_value() ->
     %% Use previously tested method to calculate
@@ -31,14 +31,7 @@ ads1015_driver_test_() ->
 setup() ->
     process_flag(trap_exit, true),
     %% Provide tests with fake application parameters
-    ?WHEN(application:get_env(_Application, Parameter) ->
-		 case Parameter of
-		     i2c_address    -> {ok, ?I2C_ADDRESS};
-	             input_channel  -> {ok, ?INPUT_CHANNEL};
-	             max_voltage    -> {ok, ?MAX_VOLTAGE};
-	             operating_mode -> {ok, ?OPERATING_MODE};
-                     data_rate      -> {ok, ?DATA_RATE}
-		 end),
+    mock_parameters(default, default, default, default, default),
     %% Mock I2C interface methods
     ?WHEN(i2c_interface:open_i2c_bus(_Address) -> {ok, ?HANDLE}),
     ?WHEN(i2c_interface:close_i2c_bus(_Address) -> ok),
@@ -50,9 +43,37 @@ setup() ->
 		     ?CONVERSION_REGISTER ->
 			 {ok, ?CONVERSION_REGISTER_VALUE}
 		 end),
+    ?WHEN(i2c_interface:read_i2c_signed_word(_Handle, _Register) ->
+		 {ok, ?CONVERSION_REGISTER_VALUE}),
     %% Start driver
     {ok, Pid} = ads1015_driver:start_link(),
     Pid.
+
+mock_parameters(I2CAddress0, InputChannel0, MaxVoltage0,
+		OperatingMode0, DataRate0) ->
+    I2CAddress = if (I2CAddress0 =:= default) -> ?I2C_ADDRESS;
+		    true -> I2CAddress0
+		 end,
+    InputChannel = if (InputChannel0 =:= default) -> ?INPUT_CHANNEL;
+		    true -> InputChannel0
+		 end,
+    MaxVoltage = if (MaxVoltage0 =:= default) -> ?MAX_VOLTAGE;
+		    true -> MaxVoltage0
+		 end,
+    OperatingMode = if (OperatingMode0 =:= default) -> ?OPERATING_MODE;
+		    true -> OperatingMode0
+		 end,
+    DataRate = if (DataRate0 =:= default) -> ?DATA_RATE;
+		    true -> DataRate0
+		 end,
+    ?WHEN(application:get_env(_Application, Parameter) ->
+		 case Parameter of
+		     i2c_address    -> {ok, I2CAddress};
+	             input_channel  -> {ok, InputChannel};
+	             max_voltage    -> {ok, MaxVoltage};
+	             operating_mode -> {ok, OperatingMode};
+                     data_rate      -> {ok, DataRate}
+		 end).
 
 teardown(Pid) ->
     %% Stop driver and make sure it's stopped before test finishes
@@ -164,3 +185,11 @@ set_config_register_should_throw_exception_when_parameter_invalid_test(_) ->
     ?assertThrow(badarg,
 		 ads1015_driver:set_config_register(invalid_channel,
 			     ?MAX_VOLTAGE, ?OPERATING_MODE, ?DATA_RATE)).
+
+read_value_from_current_channel_should_return_correct_value_test(Pid) ->
+    mock_parameters(default, default, default, continuous, default),
+    restart_server(Pid),
+    {ok, ?CONVERSION_REGISTER_VALUE} =
+	ads1015_driver:read_value_from_current_channel(),
+    ?WAS_CALLED(i2c_interface:read_i2c_signed_word(?HANDLE,
+						   ?CONVERSION_REGISTER)).

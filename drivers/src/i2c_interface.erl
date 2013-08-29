@@ -27,7 +27,7 @@
 -module(i2c_interface).
 
 -export([open_i2c_bus/1, close_i2c_bus/1]).
--export([read_i2c_byte/2, read_i2c_word/2]).
+-export([read_i2c_byte/2, read_i2c_word/2, read_i2c_signed_word/2]).
 -export([write_i2c_byte/3, write_i2c_word/3]).
 
 -define(nif_stub,
@@ -83,6 +83,12 @@ read_i2c_byte(FileHandle, Register) ->
 read_i2c_word(FileHandle, Register) ->
     read_i2c_word_nif(FileHandle, Register).
 
+-spec(read_i2c_signed_word(file_descriptor(), register_address()) ->
+	     {ok, word()} | {error, error_code()}).
+%%% @doc This reads a signed register value from the I2C device.
+read_i2c_signed_word(FileHandle, Register) ->
+    read_i2c_signed_word_nif(FileHandle, Register).
+
 -spec(write_i2c_byte(file_descriptor(), register_address(),
 		     byte()) ->
 	     ok | {error, error_code()}).
@@ -103,6 +109,7 @@ write_i2c_word(FileHandle, Register, Value) ->
 open_i2c_bus_nif(_I2CAddress)                      -> ?nif_stub.
 read_i2c_byte_nif(_FileHandle, _Register)          -> ?nif_stub.
 read_i2c_word_nif(_FileHandle, _Register)          -> ?nif_stub.
+read_i2c_signed_word_nif(_FileHandle, _Register)   -> ?nif_stub.
 write_i2c_byte_nif(_FileHandle, _Register, _Value) -> ?nif_stub.
 write_i2c_word_nif(_FileHandle, _Register, _Value) -> ?nif_stub.
 close_i2c_bus_nif(_FileHandle)                     -> ?nif_stub.

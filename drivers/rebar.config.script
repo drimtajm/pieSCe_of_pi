@@ -1,0 +1,8 @@
+case os:cmd("uname -o") of
+    "Cygwin\n" ->
+	{port_env, PortEnv} = lists:keyfind(port_env, 1, CONFIG),
+	NewPortEnv = [{"CC", "/usr/bin/gcc"} | PortEnv],
+	lists:keystore(port_env, 1, CONFIG, {port_env, NewPortEnv});
+    _Else ->
+	CONFIG
+end.

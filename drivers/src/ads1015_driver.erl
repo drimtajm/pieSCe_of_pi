@@ -163,6 +163,10 @@ handle_call({set_config_register, NewChannel, NewMaxVoltage,
 			   data_rate = NewDataRate},
     set_config_register_value(NewState),
     {reply, ok, NewState};    
+handle_call(read_value, _From, #state{i2c_interface_handle = Handle,
+				      operating_mode = continuous} = State) ->
+    {ok, Value} = i2c_interface:read_i2c_signed_word(Handle, ?CONVERSION_REGISTER),
+    {reply, {ok, Value}, State};
 handle_call(_Request, _From, State) ->
     Reply = ok,
     {reply, Reply, State}.
