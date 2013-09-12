@@ -5,3 +5,4 @@ drivers/priv/
 *.beam
 *.o
 *~
+*#
