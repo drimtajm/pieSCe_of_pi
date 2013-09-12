@@ -1,7 +1,8 @@
 -module(ads1015_driver_tests).
+
+-include_lib("../include/ads1015_driver.hrl").
 -include_lib("mockgyver/include/mockgyver.hrl").
 -include_lib("eunit/include/eunit.hrl").
--include_lib("../include/ads1015_driver.hrl").
 
 %% ---------------------------------------------------------------------
 %% Test constants
