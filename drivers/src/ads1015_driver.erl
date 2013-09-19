@@ -165,8 +165,12 @@ handle_call({set_config_register, NewChannel, NewMaxVoltage,
     {reply, ok, NewState};    
 handle_call(read_value, _From, #state{i2c_interface_handle = Handle,
 				      operating_mode = continuous} = State) ->
-    {ok, Value} = i2c_interface:read_i2c_signed_word(Handle, ?CONVERSION_REGISTER),
-    {reply, {ok, Value}, State};
+    {ok, Value} =
+	i2c_interface:read_i2c_signed_word(Handle, ?CONVERSION_REGISTER),
+    Voltage =
+	convert_conversion_register_value_to_voltage(Value,
+						     State#state.max_voltage),
+    {reply, {ok, Voltage}, State};
 handle_call(_Request, _From, State) ->
     Reply = ok,
     {reply, Reply, State}.
@@ -242,3 +246,5 @@ get_config_register_value(#state{i2c_interface_handle = Handle}) ->
     {ok, Value} = i2c_interface:read_i2c_word(Handle, ?CONFIG_REGISTER),
     ads1015_driver_lib:decode_config_register_value(Value).
 
+convert_conversion_register_value_to_voltage(Value, MaxVoltage) ->
+    (Value/?MAX_CONVERSION_REGISTER_VALUE)*MaxVoltage.

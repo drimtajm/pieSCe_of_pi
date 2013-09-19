@@ -15,7 +15,7 @@
 -define(MAX_VOLTAGE, 6.144).
 -define(OPERATING_MODE, single_shot).
 -define(DATA_RATE, 920).
--define(CONVERSION_REGISTER_VALUE, -15).
+-define(CONVERSION_REGISTER_VALUE, ?MAX_CONVERSION_REGISTER_VALUE).
 
 expected_config_register_value() ->
     %% Use previously tested method to calculate
@@ -190,7 +190,8 @@ set_config_register_should_throw_exception_when_parameter_invalid_test(_) ->
 read_value_from_current_channel_should_return_correct_value_test(Pid) ->
     mock_parameters(default, default, default, continuous, default),
     restart_server(Pid),
-    {ok, ?CONVERSION_REGISTER_VALUE} =
+    %% Conversion register is set to return 100% of reference voltage
+    {ok, ?MAX_VOLTAGE} =
 	ads1015_driver:read_value_from_current_channel(),
     ?WAS_CALLED(i2c_interface:read_i2c_signed_word(?HANDLE,
 						   ?CONVERSION_REGISTER)).

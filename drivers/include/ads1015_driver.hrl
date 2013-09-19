@@ -5,9 +5,16 @@
 -define(CONFIG_REGISTER, 1).     %% see datasheet
 -define(BASE_VALUE, 2#00011).    %% default values for comparator config bits
 
--define(MAX_WORD, 65535).
+-define(MIN_WORD, 0).
+-define(MAX_WORD, 2#1111111111111111).
+-define(MAX_SIGNED_WORD, 2#0111111111111111).
+-define(MIN_SIGNED_WORD, -2#1000000000000000).
+%% The maximum value of the conversion register is 11 bits of 12 set
+%% because the conversion register contains a signed value
+-define(MAX_CONVERSION_REGISTER_VALUE, 2#0111111111110000).
 
--type word() :: 0..?MAX_WORD.
+-type word() :: ?MIN_WORD..?MAX_WORD.
+-type signed_word() :: ?MIN_SIGNED_WORD..?MAX_SIGNED_WORD.
 
 %% ---------------------------------------------------------------------
 %% Operational status functionality
