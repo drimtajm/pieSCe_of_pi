@@ -26,7 +26,7 @@
 
 -include("../include/ads1015_driver.hrl").
 
--export([decode_status/1]).
+-export([decode_status/1, set_status_bit/1]).
 -export([encode_channel/1, decode_channel/1]).
 -export([encode_max_voltage/1, decode_max_voltage/1]).
 -export([encode_operating_mode/1, decode_operating_mode/1]).
@@ -34,7 +34,8 @@
 -export([encode_config_register_value/4, decode_config_register_value/1]).
 
 %% ---------------------------------------------------------------------
-%% Operational status functionality - decode/readonly
+%% Operational status functionality - decode -> read,
+%%                                    set -> start single conversion
 %% ---------------------------------------------------------------------
 
 -spec(decode_status(word()) -> status()).
@@ -45,6 +46,13 @@ decode_status(BitPattern) when is_integer(BitPattern),
 	?BUSY -> busy
     end;
 decode_status(_BitPattern) ->
+    throw(badarg).
+
+-spec(set_status_bit(word()) -> word()).
+set_status_bit(BitPattern) when is_integer(BitPattern),
+				BitPattern >= 0, BitPattern =< ?MAX_WORD ->
+    BitPattern bor ?STATUS_BIT;
+set_status_bit(_BitPattern) ->
     throw(badarg).
 
 %% ---------------------------------------------------------------------

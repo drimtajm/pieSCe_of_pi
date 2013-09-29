@@ -46,6 +46,7 @@ setup() ->
 		 end),
     ?WHEN(i2c_interface:read_i2c_signed_word(_Handle, _Register) ->
 		 {ok, ?CONVERSION_REGISTER_VALUE}),
+    ?WHEN(timer:sleep(_Timeout) -> ok),
     %% Start driver
     {ok, Pid} = ads1015_driver:start_link(),
     Pid.
@@ -78,8 +79,7 @@ mock_parameters(I2CAddress0, InputChannel0, MaxVoltage0,
 
 teardown(Pid) ->
     %% Stop driver and make sure it's stopped before test finishes
-    ads1015_driver:stop(),
-    wait_for_exit(Pid).
+    stop_server(Pid).
 
 %% ---------------------------------------------------------------------
 %% Internal functions
@@ -93,9 +93,12 @@ wait_for_exit(Pid) ->
     end.
 
 restart_server(Pid) ->
-    ads1015_driver:stop(),
-    wait_for_exit(Pid),
+    stop_server(Pid),
     ads1015_driver:start_link().
+
+stop_server(Pid) ->
+    ads1015_driver:stop(),
+    wait_for_exit(Pid).
 
 %% ---------------------------------------------------------------------
 %% Tests for driver startup and shutdown
@@ -187,11 +190,25 @@ set_config_register_should_throw_exception_when_parameter_invalid_test(_) ->
 		 ads1015_driver:set_config_register(invalid_channel,
 			     ?MAX_VOLTAGE, ?OPERATING_MODE, ?DATA_RATE)).
 
-read_value_from_current_channel_should_return_correct_value_test(Pid) ->
+continuous_read_value_should_return_correct_value_test(Pid) ->
     mock_parameters(default, default, default, continuous, default),
-    restart_server(Pid),
+    {ok, NewPid} = restart_server(Pid),
     %% Conversion register is set to return 100% of reference voltage
     {ok, ?MAX_VOLTAGE} =
 	ads1015_driver:read_value_from_current_channel(),
+    ?WAS_CALLED(i2c_interface:read_i2c_signed_word(?HANDLE,
+						   ?CONVERSION_REGISTER)),
+    %% cleanup new server
+    stop_server(NewPid).
+
+single_read_value_should_return_correct_value_test(_Pid) ->
+    %% Conversion register is set to return 100% of reference voltage
+    {ok, ?MAX_VOLTAGE} =
+	ads1015_driver:read_value_from_current_channel(),
+    ?WAS_CALLED(i2c_interface:read_i2c_word(?HANDLE, ?CONFIG_REGISTER)),
+    ConfigRegisterValueWithStatusBitSet =
+	ads1015_driver_lib:set_status_bit(expected_config_register_value()),
+    ?WAS_CALLED(i2c_interface:write_i2c_word(?HANDLE, ?CONFIG_REGISTER,
+		ConfigRegisterValueWithStatusBitSet)),
     ?WAS_CALLED(i2c_interface:read_i2c_signed_word(?HANDLE,
 						   ?CONVERSION_REGISTER)).

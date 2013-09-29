@@ -14,6 +14,14 @@ word_value() ->
 %% Tests for operational status functionality
 %% ---------------------------------------------------------------------
 
+prop_set_status_bit_always_sets_status_bit() ->
+    ?FORALL(BitPattern, word_value(),
+	    begin
+		NewBitPattern = ads1015_driver_lib:set_status_bit(BitPattern),
+		is_integer(NewBitPattern)
+		    and ((NewBitPattern band ?STATUS_BIT) > 0)
+	    end).
+
 prop_decodes_status_bit_to_valid_status_value() ->
     ?FORALL(BitPattern, word_value(),
 	    begin
