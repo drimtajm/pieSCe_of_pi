@@ -26,8 +26,10 @@
 %%%-------------------------------------------------------------------
 -module(bluetooth_interface).
 
--export([create_bt_socket/0, close_bt_socket/1]).
+-export([create_rfcomm_socket/0, close_bt_socket/1]).
 -export([bind_bt_socket_any_device/2, bind_bt_socket/3]).
+-export([bt_socket_listen/1, bt_socket_accept/1, bt_socket_connect/3]).
+-export([bt_socket_send/2, bt_socket_receive/1]).
 -export([mac_address_to_string/1]).
 
 -define(nif_stub,
@@ -42,7 +44,7 @@
 -type error_code()  :: atom() | {other, integer()}.
 -type socket()      :: pos_integer().
 -type bt_channel()  :: 1..30.
--type mac_address() :: {byte(), byte(), byte(), byte(), byte(), byte()}.
+%%-type mac_address() :: {byte(), byte(), byte(), byte(), byte(), byte()}.
 
 on_load() ->
     PrivDir = case code:priv_dir(?MODULE) of
@@ -56,10 +58,10 @@ on_load() ->
     Filename = filename:join(PrivDir, ?MODULE),
     ok = erlang:load_nif(Filename, 0).
 
--spec(create_bt_socket() -> {ok, socket()} | {error, error_code()}).
-%%% @doc This creates a bluetooth socket and returns the socket handle
-create_bt_socket() ->
-    create_bt_socket_nif().
+-spec(create_rfcomm_socket() -> {ok, socket()} | {error, error_code()}).
+%%% @doc This creates an RFCOMM bluetooth socket and returns the socket handle
+create_rfcomm_socket() ->
+    create_rfcomm_socket_nif().
 
 -spec(close_bt_socket(socket()) -> ok | {error, error_code()}).
 %%% @doc This closes a bluetooth socket
@@ -73,13 +75,14 @@ close_bt_socket(Socket) ->
 bind_bt_socket_any_device(Socket, Channel) ->
     bind_bt_socket_any_nif(Socket, Channel).
 
--spec(bind_bt_socket(socket(), bt_channel(), mac_address()) -> 
+-spec(bind_bt_socket(socket(), bt_channel(), string()) -> 
 	     ok | {error, error_code()}).
 %%% @doc This binds a bluetooth socket to an RFCOMM port,
 %%%      using the device with the specified mac address
-bind_bt_socket(Socket, Channel, MacAddress) ->
-    MacAddressString = mac_address_to_string(MacAddress),
+bind_bt_socket(Socket, Channel, MacAddressString) ->
+%%    MacAddressString = mac_address_to_string(MacAddress),
     bind_bt_socket_nif(Socket, Channel, MacAddressString).
+
 
 mac_address_to_string(MacAddress) ->
     {A, B, C, D, E, F} = MacAddress,
@@ -87,13 +90,34 @@ mac_address_to_string(MacAddress) ->
       io_lib:format("~2.16.0B:~2.16.0B:~2.16.0B:~2.16.0B:~2.16.0B:~2.16.0B",
 		    [A, B, C, D, E, F])).
 
+bt_socket_listen(Socket) ->
+    bt_socket_listen_nif(Socket).
+
+bt_socket_accept(Socket) ->
+    bt_socket_accept_nif(Socket).
+
+bt_socket_connect(Socket, Port, RemoteMac) ->
+%%    MacAddressString = mac_address_to_string(RemoteMac),
+    bt_socket_connect_nif(Socket, Port, RemoteMac).
+
+bt_socket_send(Socket, Data) ->
+    bt_socket_send_nif(Socket, Data).
+
+bt_socket_receive(Socket) ->
+    bt_socket_receive_nif(Socket).
+
 %%%%%%%%%%%%%%%
 %% Define stubs for NIF functions
 
-create_bt_socket_nif()                      -> ?nif_stub.
-bind_bt_socket_any_nif(_Socket, _Channel)   -> ?nif_stub.
-bind_bt_socket_nif(_Socket, _Channel, _Mac) -> ?nif_stub.
-close_bt_socket_nif(_Socket)                -> ?nif_stub.
+create_rfcomm_socket_nif()                        -> ?nif_stub.
+bind_bt_socket_any_nif(_Socket, _Channel)         -> ?nif_stub.
+bind_bt_socket_nif(_Socket, _Channel, _Mac)       -> ?nif_stub.
+bt_socket_listen_nif(_Socket)                     -> ?nif_stub.
+bt_socket_accept_nif(_Socket)                     -> ?nif_stub.
+bt_socket_connect_nif(_Socket, _Port, _RemoteMac) -> ?nif_stub.
+bt_socket_send_nif(_Socket, _Data)                -> ?nif_stub.
+bt_socket_receive_nif(_Socket)                    -> ?nif_stub.
+close_bt_socket_nif(_Socket)                      -> ?nif_stub.
 
 %%
 %%%%%%%%%%%%%%%
