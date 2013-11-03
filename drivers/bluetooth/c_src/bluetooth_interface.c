@@ -30,6 +30,8 @@
 
 #include "erl_nif.h"
 
+#define DEBUG 0
+
 static ERL_NIF_TERM atom_ok;
 static ERL_NIF_TERM atom_error;
 
@@ -48,6 +50,8 @@ static ERL_NIF_TERM errno2atom(ErlNifEnv *env, const int error_code) {
   case EBADFD:       return enif_make_atom(env, "ebadfd");
   case EADDRINUSE:   return enif_make_atom(env, "eaddrinuse");
   case ECONNREFUSED: return enif_make_atom(env, "econnrefused");
+  case ECONNRESET:   return enif_make_atom(env, "econnreset");
+  case EHOSTUNREACH: return enif_make_atom(env, "ehostunreach");
     // TODO: implement other error codes
   default:     return enif_make_tuple(env, 2,
 				      enif_make_atom(env, "other"),
@@ -61,11 +65,14 @@ static ERL_NIF_TERM make_error(ErlNifEnv *env, const int error_code) {
 
 static ERL_NIF_TERM create_socket_nif(ErlNifEnv *env, int argc,
 				      const ERL_NIF_TERM argv[]) {
+  int optval;
   int result = socket(AF_BLUETOOTH, SOCK_STREAM, BTPROTO_RFCOMM);
   if (result < 0) {
     result = errno;
     return make_error(env, result);
   }
+  optval = 1;
+  setsockopt(result, SOL_SOCKET, SO_REUSEADDR, &optval, sizeof(optval));
   return enif_make_tuple(env, 2, atom_ok, enif_make_int(env, result));
 }
 
@@ -77,6 +84,8 @@ static ERL_NIF_TERM bind_socket_nif(ErlNifEnv *env, int argc,
   if (!enif_get_int(env, argv[0], &sock) || (sock < 0)) {
     return enif_make_badarg(env);
   }
+//  char *device = "hci0"; // 4 bytes long, so 4, below:
+//  result = setsockopt(sock, SOL_SOCKET, SO_BINDTODEVICE, device, 4);
   if (!enif_get_int(env, argv[1], &port) || (port < 1) || (port > 30)) {
     return enif_make_badarg(env);
   }
@@ -185,12 +194,14 @@ static ERL_NIF_TERM socket_send_nif(ErlNifEnv *env, int argc,
   if (enif_is_binary(env, argv[1])) {
     ErlNifBinary p;
     enif_inspect_binary(env, argv[1], &p);
+    #if DEBUG
+    int i;
+    for (i = 0; i<p.size; ++i) {
+      printf("%d ", p.data[i]);
+    }
+    printf("\n");
+    #endif
     result = send(sock, p.data, p.size, 0);
-  } else if (enif_is_list(env, argv[1])) {
-    char buffer[1024] = { 0 };
-    int buffer_size;
-    buffer_size = enif_get_string(env, argv[1], buffer, 1024, ERL_NIF_LATIN1);
-    result = send(sock, buffer, buffer_size-1, 0);
   } else {
     return enif_make_badarg(env);
   }
@@ -219,6 +230,7 @@ static ERL_NIF_TERM socket_receive_nif(ErlNifEnv *env, int argc,
     return enif_make_tuple(env, 2, atom_error,
 			   enif_make_atom(env, "allocation_failed"));
   }
+  memcpy(bin.data, buffer, result);
   return enif_make_tuple(env, 3, atom_ok, enif_make_int(env, result),
 			 enif_make_binary(env, &bin));
 }

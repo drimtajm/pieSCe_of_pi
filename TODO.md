@@ -23,8 +23,10 @@ Milestone 1: Add support for "instrument panel"
 
 Milestone 2: Add bluetooth support
 
-- [ ] Write NIF to interface Bluez library from Erlang
+- [ ] Write NIF to interface Bluez library from Erlang - ongoing
+- [ ] Make sockets nonblocking and provide support for certain sockopts
 - [ ] Write bluetooth behaviour: gen_bluetooth
+- [ ] In behaviour startup/socket handling, handle device state and power up if necessary
 - [ ] Write client and server that use bluetooth "sockets" as provided by behaviour
 - [ ] Add a way to start "automatically" on boot (rc.local?)
 - [ ] Integrate with previous code/replace previous transport layer
