@@ -18,6 +18,7 @@
 #include <unistd.h>
 #include <errno.h>
 #include <sys/socket.h>
+#include <string.h>
 
 #ifdef __ARM_EABI__
 // ARM architecture, we're probably on a Raspberry Pi. Include "real" Bluez headers

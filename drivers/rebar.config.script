@@ -1,3 +1,5 @@
+%% This line tells emacs to use -*- erlang -*- mode for this file
+
 case os:cmd("uname -o") of
     "Cygwin\n" ->
 	{port_env, PortEnv} = lists:keyfind(port_env, 1, CONFIG),
