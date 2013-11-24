@@ -78,8 +78,57 @@ static ERL_NIF_TERM open_i2c_bus_nif(ErlNifEnv *env, int argc,
   return enif_make_tuple(env, 2, atom_ok, enif_make_int(env, file));
 }
 
-static ERL_NIF_TERM read_i2c_byte_nif(ErlNifEnv *env, int argc,
-				      const ERL_NIF_TERM argv[]) {
+static unsigned int swap_lower_bytes(const unsigned int val) {
+  const unsigned int tmp = val & 0xFFFF;
+  return ((tmp << 8) | (tmp >> 8)) & 0xFFFF;
+}
+
+static ERL_NIF_TERM read_i2c_raw_byte_nif(ErlNifEnv *env, int argc,
+					  const ERL_NIF_TERM argv[]) {
+  int file;
+  int16_t result;
+  uint8_t value;
+  if (!enif_get_int(env, argv[0], &file)) {
+    return enif_make_badarg(env);
+  }
+  if ((result = read(file, &value, 1)) != 1) {
+    return make_error(env, errno);
+  }
+  return enif_make_tuple(env, 2, atom_ok, enif_make_int(env, value));
+}
+
+static ERL_NIF_TERM read_i2c_raw_word_nif(ErlNifEnv *env, int argc,
+					  const ERL_NIF_TERM argv[]) {
+  int file;
+  int32_t result;
+  uint16_t value0;
+  if (!enif_get_int(env, argv[0], &file)) {
+    return enif_make_badarg(env);
+  }
+  if ((result = read(file, &value0, 2)) != 2) {
+    return make_error(env, errno);
+  }
+  unsigned int value = swap_lower_bytes(value0);
+  return enif_make_tuple(env, 2, atom_ok, enif_make_int(env, value));
+}
+
+static ERL_NIF_TERM read_i2c_raw_signed_word_nif(ErlNifEnv *env, int argc,
+						 const ERL_NIF_TERM argv[]) {
+  int file;
+  int32_t result;
+  uint16_t value0;
+  if (!enif_get_int(env, argv[0], &file)) {
+    return enif_make_badarg(env);
+  }
+  if ((result = read(file, &value0, 2)) != 2) {
+    return make_error(env, errno);
+  }
+  int value = (int16_t)swap_lower_bytes(value0);
+  return enif_make_tuple(env, 2, atom_ok, enif_make_int(env, value));
+}
+
+static ERL_NIF_TERM read_i2c_smbus_byte_nif(ErlNifEnv *env, int argc,
+					    const ERL_NIF_TERM argv[]) {
   int file;
   unsigned int reg;
   int16_t result;
@@ -95,13 +144,8 @@ static ERL_NIF_TERM read_i2c_byte_nif(ErlNifEnv *env, int argc,
   return enif_make_tuple(env, 2, atom_ok, enif_make_int(env, result));
 }
 
-static unsigned int swap_lower_bytes(const unsigned int val) {
-  const unsigned int tmp = val & 0xFFFF;
-  return ((tmp << 8) | (tmp >> 8)) & 0xFFFF;
-}
-
-static ERL_NIF_TERM read_i2c_word_nif(ErlNifEnv *env, int argc,
-				      const ERL_NIF_TERM argv[]) {
+static ERL_NIF_TERM read_i2c_smbus_word_nif(ErlNifEnv *env, int argc,
+					    const ERL_NIF_TERM argv[]) {
   int file;
   unsigned int reg;
   int32_t result;
@@ -118,8 +162,8 @@ static ERL_NIF_TERM read_i2c_word_nif(ErlNifEnv *env, int argc,
   return enif_make_tuple(env, 2, atom_ok, enif_make_int(env, value));
 }
 
-static ERL_NIF_TERM read_i2c_signed_word_nif(ErlNifEnv *env, int argc,
-					     const ERL_NIF_TERM argv[]) {
+static ERL_NIF_TERM read_i2c_smbus_signed_word_nif(ErlNifEnv *env, int argc,
+						   const ERL_NIF_TERM argv[]) {
   int file;
   unsigned int reg;
   int32_t result;
@@ -136,7 +180,7 @@ static ERL_NIF_TERM read_i2c_signed_word_nif(ErlNifEnv *env, int argc,
   return enif_make_tuple(env, 2, atom_ok, enif_make_int(env, value));
 }
 
-static ERL_NIF_TERM write_i2c_byte_nif(ErlNifEnv *env, int argc,
+static ERL_NIF_TERM write_i2c_smbus_byte_nif(ErlNifEnv *env, int argc,
 				       const ERL_NIF_TERM argv[]) {
   int file;
   unsigned int reg, value0;
@@ -158,7 +202,7 @@ static ERL_NIF_TERM write_i2c_byte_nif(ErlNifEnv *env, int argc,
   return atom_ok;
 }
 
-static ERL_NIF_TERM write_i2c_word_nif(ErlNifEnv *env, int argc,
+static ERL_NIF_TERM write_i2c_smbus_word_nif(ErlNifEnv *env, int argc,
 				       const ERL_NIF_TERM argv[]) {
   int file;
   unsigned int reg, value0;
@@ -196,13 +240,16 @@ static ERL_NIF_TERM close_i2c_bus_nif(ErlNifEnv *env, int argc,
 
 static ErlNifFunc nif_funcs[] =
     {
-      {"open_i2c_bus_nif",            1, open_i2c_bus_nif},
-      {"read_i2c_byte_nif",           2, read_i2c_byte_nif},
-      {"read_i2c_word_nif",           2, read_i2c_word_nif},
-      {"read_i2c_signed_word_nif",    2, read_i2c_signed_word_nif},
-      {"write_i2c_byte_nif",          3, write_i2c_byte_nif},
-      {"write_i2c_word_nif",          3, write_i2c_word_nif},
-      {"close_i2c_bus_nif",           1, close_i2c_bus_nif}
+      {"open_i2c_bus_nif",               1, open_i2c_bus_nif},
+      {"read_i2c_raw_byte_nif",          1, read_i2c_raw_byte_nif},
+      {"read_i2c_raw_word_nif",          1, read_i2c_raw_word_nif},
+      {"read_i2c_raw_signed_word_nif",   1, read_i2c_raw_signed_word_nif},
+      {"read_i2c_smbus_byte_nif",        2, read_i2c_smbus_byte_nif},
+      {"read_i2c_smbus_word_nif",        2, read_i2c_smbus_word_nif},
+      {"read_i2c_smbus_signed_word_nif", 2, read_i2c_smbus_signed_word_nif},
+      {"write_i2c_smbus_byte_nif",       3, write_i2c_smbus_byte_nif},
+      {"write_i2c_smbus_word_nif",       3, write_i2c_smbus_word_nif},
+      {"close_i2c_bus_nif",              1, close_i2c_bus_nif}
     };
 
 ERL_NIF_INIT(i2c_interface, nif_funcs, load, NULL, NULL, NULL)

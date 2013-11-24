@@ -172,7 +172,7 @@ handle_call({set_config_register, NewChannel, NewMaxVoltage,
 handle_call(read_value, _From, #state{i2c_interface_handle = Handle,
 				      operating_mode = continuous} = State) ->
     {ok, Value} =
-	i2c_interface:read_i2c_signed_word(Handle, ?CONVERSION_REGISTER),
+	i2c_interface:read_i2c_smbus_signed_word(Handle, ?CONVERSION_REGISTER),
     Voltage =
 	convert_conversion_register_value_to_voltage(Value,
 						     State#state.max_voltage),
@@ -183,7 +183,7 @@ handle_call(read_value, _From, #state{i2c_interface_handle = Handle,
     start_single_conversion(State),
     wait_for_single_conversion(State),
     {ok, Value} =
-	i2c_interface:read_i2c_signed_word(Handle, ?CONVERSION_REGISTER),
+	i2c_interface:read_i2c_smbus_signed_word(Handle, ?CONVERSION_REGISTER),
     Voltage =
 	convert_conversion_register_value_to_voltage(Value,
 						     State#state.max_voltage),
@@ -258,17 +258,18 @@ set_config_register_value(#state{i2c_interface_handle = Handle,
 			   data_rate = DataRate}) ->
     Value = ads1015_driver_lib:encode_config_register_value(
 	      InputChannel, MaxVoltage, OperatingMode, DataRate),
-    i2c_interface:write_i2c_word(Handle, ?CONFIG_REGISTER, Value).
+    i2c_interface:write_i2c_smbus_word(Handle, ?CONFIG_REGISTER, Value).
 
 get_config_register_value(#state{i2c_interface_handle = Handle}) ->
-    {ok, Value} = i2c_interface:read_i2c_word(Handle, ?CONFIG_REGISTER),
+    {ok, Value} = i2c_interface:read_i2c_smbus_word(Handle, ?CONFIG_REGISTER),
     ads1015_driver_lib:decode_config_register_value(Value).
 
 start_single_conversion(#state{i2c_interface_handle = Handle}) ->
     %% single conversion is started by setting the status bit (see data sheet)
-    {ok, CRValue} = i2c_interface:read_i2c_word(Handle, ?CONFIG_REGISTER),
+    {ok, CRValue} =
+	i2c_interface:read_i2c_smbus_word(Handle, ?CONFIG_REGISTER),
     NewCRValue = ads1015_driver_lib:set_status_bit(CRValue),
-    i2c_interface:write_i2c_word(Handle, ?CONFIG_REGISTER, NewCRValue).
+    i2c_interface:write_i2c_smbus_word(Handle, ?CONFIG_REGISTER, NewCRValue).
 
 wait_for_single_conversion(#state{data_rate = DataRate}) ->
     %% according to data sheet, data rate fluctuates with -10% to +10%

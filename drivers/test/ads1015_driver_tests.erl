@@ -36,15 +36,15 @@ setup() ->
     %% Mock I2C interface methods
     ?WHEN(i2c_interface:open_i2c_bus(_Address) -> {ok, ?HANDLE}),
     ?WHEN(i2c_interface:close_i2c_bus(_Address) -> ok),
-    ?WHEN(i2c_interface:write_i2c_word(_Handle, _Register, _Value) -> ok),
-    ?WHEN(i2c_interface:read_i2c_word(_Handle, Register) ->
+    ?WHEN(i2c_interface:write_i2c_smbus_word(_Handle, _Register, _Value) -> ok),
+    ?WHEN(i2c_interface:read_i2c_smbus_word(_Handle, Register) ->
 		 case Register of
 		     ?CONFIG_REGISTER     ->
 			 {ok, expected_config_register_value() + ?IDLE};
 		     ?CONVERSION_REGISTER ->
 			 {ok, ?CONVERSION_REGISTER_VALUE}
 		 end),
-    ?WHEN(i2c_interface:read_i2c_signed_word(_Handle, _Register) ->
+    ?WHEN(i2c_interface:read_i2c_smbus_signed_word(_Handle, _Register) ->
 		 {ok, ?CONVERSION_REGISTER_VALUE}),
     ?WHEN(timer:sleep(_Timeout) -> ok),
     %% Start driver
@@ -111,7 +111,7 @@ init_should_open_i2c_bus_test(_) ->
 
 init_should_set_config_register_test(_) ->
     ExpectedValue = expected_config_register_value(),
-    ?WAS_CALLED(i2c_interface:write_i2c_word(?HANDLE, ?CONFIG_REGISTER,
+    ?WAS_CALLED(i2c_interface:write_i2c_smbus_word(?HANDLE, ?CONFIG_REGISTER,
 					     ExpectedValue)).
 
 init_should_stop_server_when_i2c_bus_unavailable_test(Pid) ->
@@ -154,12 +154,12 @@ change_channel_should_set_new_channel_on_device_test(_) ->
     ExpectedValue =
 	ads1015_driver_lib:encode_config_register_value(NewInputChannel,
                       ?MAX_VOLTAGE, ?OPERATING_MODE, ?DATA_RATE),
-    ?WAS_CALLED(i2c_interface:write_i2c_word(?HANDLE, ?CONFIG_REGISTER,
-					     ExpectedValue)).
+    ?WAS_CALLED(i2c_interface:write_i2c_smbus_word(?HANDLE, ?CONFIG_REGISTER,
+						   ExpectedValue)).
 
 read_config_register_should_read_register_value_from_device_test(_) ->
     ads1015_driver:read_config_register(),
-    ?WAS_CALLED(i2c_interface:read_i2c_word(?HANDLE, ?CONFIG_REGISTER)).
+    ?WAS_CALLED(i2c_interface:read_i2c_smbus_word(?HANDLE, ?CONFIG_REGISTER)).
 
 read_config_register_should_return_current_values_test(_) ->
     {ok, idle, ?INPUT_CHANNEL, ?MAX_VOLTAGE, ?OPERATING_MODE, ?DATA_RATE}
@@ -175,8 +175,8 @@ set_config_register_should_set_config_register_on_device_test(_) ->
     ExpectedValue =
 	ads1015_driver_lib:encode_config_register_value(Channel,
 			     MaxVoltage, OperatingMode, DataRate),
-    ?WAS_CALLED(i2c_interface:write_i2c_word(?HANDLE, ?CONFIG_REGISTER,
-					     ExpectedValue)).
+    ?WAS_CALLED(i2c_interface:write_i2c_smbus_word(?HANDLE, ?CONFIG_REGISTER,
+						   ExpectedValue)).
 
 current_channel_should_be_updated_when_set_config_register_is_called_test(_) ->
     {ok, ?INPUT_CHANNEL} = ads1015_driver:get_current_channel(),
@@ -196,8 +196,8 @@ continuous_read_value_should_return_correct_value_test(Pid) ->
     %% Conversion register is set to return 100% of reference voltage
     {ok, ?MAX_VOLTAGE} =
 	ads1015_driver:read_value_from_current_channel(),
-    ?WAS_CALLED(i2c_interface:read_i2c_signed_word(?HANDLE,
-						   ?CONVERSION_REGISTER)),
+    ?WAS_CALLED(i2c_interface:read_i2c_smbus_signed_word(?HANDLE,
+							 ?CONVERSION_REGISTER)),
     %% cleanup new server
     stop_server(NewPid).
 
@@ -205,10 +205,10 @@ single_read_value_should_return_correct_value_test(_Pid) ->
     %% Conversion register is set to return 100% of reference voltage
     {ok, ?MAX_VOLTAGE} =
 	ads1015_driver:read_value_from_current_channel(),
-    ?WAS_CALLED(i2c_interface:read_i2c_word(?HANDLE, ?CONFIG_REGISTER)),
+    ?WAS_CALLED(i2c_interface:read_i2c_smbus_word(?HANDLE, ?CONFIG_REGISTER)),
     ConfigRegisterValueWithStatusBitSet =
 	ads1015_driver_lib:set_status_bit(expected_config_register_value()),
-    ?WAS_CALLED(i2c_interface:write_i2c_word(?HANDLE, ?CONFIG_REGISTER,
+    ?WAS_CALLED(i2c_interface:write_i2c_smbus_word(?HANDLE, ?CONFIG_REGISTER,
 		ConfigRegisterValueWithStatusBitSet)),
-    ?WAS_CALLED(i2c_interface:read_i2c_signed_word(?HANDLE,
-						   ?CONVERSION_REGISTER)).
+    ?WAS_CALLED(i2c_interface:read_i2c_smbus_signed_word(?HANDLE,
+							 ?CONVERSION_REGISTER)).

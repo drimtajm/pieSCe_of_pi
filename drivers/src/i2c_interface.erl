@@ -27,8 +27,10 @@
 -module(i2c_interface).
 
 -export([open_i2c_bus/1, close_i2c_bus/1]).
--export([read_i2c_byte/2, read_i2c_word/2, read_i2c_signed_word/2]).
--export([write_i2c_byte/3, write_i2c_word/3]).
+-export([read_i2c_raw_byte/1, read_i2c_raw_word/1,
+	 read_i2c_raw_signed_word/1, read_i2c_smbus_byte/2,
+	 read_i2c_smbus_word/2, read_i2c_smbus_signed_word/2]).
+-export([write_i2c_smbus_byte/3, write_i2c_smbus_word/3]).
 
 -define(nif_stub,
         erlang:nif_error({nif_not_loaded, module, ?MODULE, line, ?LINE})).
@@ -71,48 +73,69 @@ open_i2c_bus(I2CAddress) ->
 close_i2c_bus(FileHandle) ->
     close_i2c_bus_nif(FileHandle).
 
--spec(read_i2c_byte(file_descriptor(), register_address()) ->
+-spec(read_i2c_raw_byte(file_descriptor()) ->
+	     {ok, byte()} | {error, error_code()}).
+%%% @doc This reads a raw byte value from the I2C device.
+read_i2c_raw_byte(FileHandle) ->
+    read_i2c_raw_byte_nif(FileHandle).
+
+-spec(read_i2c_raw_word(file_descriptor()) ->
+	     {ok, word()} | {error, error_code()}).
+%%% @doc This reads a raw word value from the I2C device.
+read_i2c_raw_word(FileHandle) ->
+    read_i2c_raw_word_nif(FileHandle).
+
+-spec(read_i2c_raw_signed_word(file_descriptor()) ->
+	     {ok, word()} | {error, error_code()}).
+%%% @doc This reads a signed word value from the I2C device.
+read_i2c_raw_signed_word(FileHandle) ->
+    read_i2c_raw_signed_word_nif(FileHandle).
+
+-spec(read_i2c_smbus_byte(file_descriptor(), register_address()) ->
 	     {ok, byte()} | {error, error_code()}).
 %%% @doc This reads a register value from the I2C device.
-read_i2c_byte(FileHandle, Register) ->
-    read_i2c_byte_nif(FileHandle, Register).
+read_i2c_smbus_byte(FileHandle, Register) ->
+    read_i2c_smbus_byte_nif(FileHandle, Register).
 
--spec(read_i2c_word(file_descriptor(), register_address()) ->
+-spec(read_i2c_smbus_word(file_descriptor(), register_address()) ->
 	     {ok, word()} | {error, error_code()}).
 %%% @doc This reads a register value from the I2C device.
-read_i2c_word(FileHandle, Register) ->
-    read_i2c_word_nif(FileHandle, Register).
+read_i2c_smbus_word(FileHandle, Register) ->
+    read_i2c_smbus_word_nif(FileHandle, Register).
 
--spec(read_i2c_signed_word(file_descriptor(), register_address()) ->
+-spec(read_i2c_smbus_signed_word(file_descriptor(), register_address()) ->
 	     {ok, word()} | {error, error_code()}).
 %%% @doc This reads a signed register value from the I2C device.
-read_i2c_signed_word(FileHandle, Register) ->
-    read_i2c_signed_word_nif(FileHandle, Register).
+read_i2c_smbus_signed_word(FileHandle, Register) ->
+    read_i2c_smbus_signed_word_nif(FileHandle, Register).
 
--spec(write_i2c_byte(file_descriptor(), register_address(),
+-spec(write_i2c_smbus_byte(file_descriptor(), register_address(),
 		     byte()) ->
 	     ok | {error, error_code()}).
 %%% @doc This writes a byte value to a register on the I2C device.
-write_i2c_byte(FileHandle, Register, Value) ->
-    write_i2c_byte_nif(FileHandle, Register, Value).
+write_i2c_smbus_byte(FileHandle, Register, Value) ->
+    write_i2c_smbus_byte_nif(FileHandle, Register, Value).
 
--spec(write_i2c_word(file_descriptor(), register_address(),
+-spec(write_i2c_smbus_word(file_descriptor(), register_address(),
 		     word()) ->
 	     ok | {error, error_code()}).
 %%% @doc This writes a word value to a register on the I2C device.
-write_i2c_word(FileHandle, Register, Value) ->
-    write_i2c_word_nif(FileHandle, Register, Value).
+write_i2c_smbus_word(FileHandle, Register, Value) ->
+    write_i2c_smbus_word_nif(FileHandle, Register, Value).
 
 %%%%%%%%%%%%%%%
 %% Define stubs for NIF functions
 
-open_i2c_bus_nif(_I2CAddress)                      -> ?nif_stub.
-read_i2c_byte_nif(_FileHandle, _Register)          -> ?nif_stub.
-read_i2c_word_nif(_FileHandle, _Register)          -> ?nif_stub.
-read_i2c_signed_word_nif(_FileHandle, _Register)   -> ?nif_stub.
-write_i2c_byte_nif(_FileHandle, _Register, _Value) -> ?nif_stub.
-write_i2c_word_nif(_FileHandle, _Register, _Value) -> ?nif_stub.
-close_i2c_bus_nif(_FileHandle)                     -> ?nif_stub.
+open_i2c_bus_nif(_I2CAddress)                            -> ?nif_stub.
+read_i2c_raw_byte_nif(_FileHandle)                       -> ?nif_stub.
+read_i2c_raw_word_nif(_FileHandle)                       -> ?nif_stub.
+read_i2c_raw_signed_word_nif(_FileHandle)                -> ?nif_stub.
+read_i2c_smbus_byte_nif(_FileHandle, _Register)          -> ?nif_stub.
+read_i2c_smbus_word_nif(_FileHandle, _Register)          -> ?nif_stub.
+read_i2c_smbus_signed_word_nif(_FileHandle, _Register)   -> ?nif_stub.
+write_i2c_smbus_byte_nif(_FileHandle, _Register, _Value) -> ?nif_stub.
+write_i2c_smbus_word_nif(_FileHandle, _Register, _Value) -> ?nif_stub.
+close_i2c_bus_nif(_FileHandle)                           -> ?nif_stub.
 
 %%
 %%%%%%%%%%%%%%%
