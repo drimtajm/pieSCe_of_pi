@@ -52,7 +52,9 @@ static ERL_NIF_TERM errno2atom(ErlNifEnv *env, const int error_code) {
   case EADDRINUSE:   return enif_make_atom(env, "eaddrinuse");
   case ECONNREFUSED: return enif_make_atom(env, "econnrefused");
   case ECONNRESET:   return enif_make_atom(env, "econnreset");
+  case ENOTCONN:     return enif_make_atom(env, "enotconn");
   case EHOSTUNREACH: return enif_make_atom(env, "ehostunreach");
+  case EHOSTDOWN:    return enif_make_atom(env, "ehostdown");
     // TODO: implement other error codes
   default:     return enif_make_tuple(env, 2,
 				      enif_make_atom(env, "other"),
