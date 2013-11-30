@@ -1,7 +1,0 @@
-{application,onboard_computer,
-             [{description,"Application that simulates a car's onboard computer"},
-              {vsn,"0.1"},
-              {registered,[]},
-              {applications,[kernel,stdlib]},
-              {env,[]},
-              {modules,[]}]}.
