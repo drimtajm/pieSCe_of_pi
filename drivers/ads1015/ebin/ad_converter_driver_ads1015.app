@@ -1,0 +1,13 @@
+{application,ad_converter_driver_ads1015,
+             [{description,"A/D converter driver for ADS1015"},
+              {vsn,"1"},
+              {modules,[ads1015_driver,ads1015_driver_app,ads1015_driver_lib,
+                        ads1015_driver_sup,driver_test]},
+              {registered,[ads1015_driver]},
+              {applications,[kernel,stdlib]},
+              {mod,{ads1015_driver_app,[]}},
+              {env,[{i2c_address,72},
+                    {input_channel,0},
+                    {max_voltage,6.144},
+                    {operating_mode,continuous},
+                    {data_rate,1600}]}]}.

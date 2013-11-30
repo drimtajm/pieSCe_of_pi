@@ -1,6 +1,7 @@
 deps/
-ebin/
+ebin/*.beam
 drivers/.eunit/
+drivers/ads1015/.eunit
 drivers/priv/
 *.beam
 *.o
